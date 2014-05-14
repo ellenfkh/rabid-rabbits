@@ -1,104 +1,123 @@
 
 (function(){
 
-	// random board creation until we have real things
-	function defineBoard(board) {
-		// make some tiles
-		for (var i = 0; i < 10; i++) {
-			var row = [];
-			for (var j = 0; j < 10; j++) {
-				row.push(Math.floor(Math.random() * 3))
-			}
-			board.tiles.push(row);
+	// Removes the given tile from an array of tiles
+	function removeTileFromArray(array, item) {
+		var index = findTileIndex(array, item);
+		if (index != -1 ) {
+			array.splice(index, 1);
 		}
-
-		// make some bunnies
-		for (var i = 0; i < Math.floor((Math.random() * 20) + 1); i++) {
-
-			var randPlayer = Math.floor((Math.random() * 2) + 1);
-
-			if (Math.floor((Math.random() * 2) + 1) === 1) {
-				var randBunny = "warrior";
-			}
-			else {
-				var randBunny = "worker";
-			}
-
-			var randX = Math.floor((Math.random() * board.tiles.length))
-			var randY = Math.floor((Math.random() * board.tiles.length))
-
-			var bunny = {
-				player: randPlayer,
-				type: randBunny,
-				xPos: randX,
-				yPos: randY
-			};
-			board.bunnies.push(bunny);
-		}
-
-		// make monies
-		for (var i = 0; i < Math.floor((Math.random() * 20) + 1); i++) {
-
-			var randX = Math.floor((Math.random() * board.tiles.length))
-			var randY = Math.floor((Math.random() * board.tiles.length))
-
-			board.money.push([randX, randY]);
-		}
-
-		// create players
-		var player1 = {
-			money: Math.floor((Math.random() * 50)),
-			score: Math.floor((Math.random() * 1000))
-		}
-		var player2 = {
-			money: Math.floor((Math.random() * 50)),
-			score: Math.floor((Math.random() * 1000))
-		}
-		board.player1 = player1;
-		board.player2 = player2;	
-
 	}
 
-	function initialize(board) {
+	// Finds the index of the array representing a 
+	// tile in an array of tiles
+	function findTileIndex(array, item) {
+		for (var i = 0; i < array.length; i++) {
+			if (array[i][0] === item[0] && array[i][1] === item[1]) {
+				return i;
+			}
+		}
+		return -1
+	}
 
-		var numMoney = 7;
+	// Adds a base and starting bunnies to the board for the specified player
+	function initializeBase(board, useableTiles, player) {
+		// choose a random tile for the first base
+		var randTile = useableTiles[Math.floor(Math.random()
+			*useableTiles.length)];
+
+		if (player === 1) {
+			board.base1 = randTile;
+		}
+		else {
+			board.base2 = randTile;
+		}
+		
+
+		// remove all tiles in and surrounding the base from usable tiles
+		for (var x = randTile[0] - 2; x < randTile[0] + 3; x++) {
+			for (var y = randTile[1] - 2; y < randTile[1] + 3; y++) {
+				removeTileFromArray(useableTiles, [x,y]);
+			}
+		}
+
+		// add initial bunnies at the base
+		var origWorker = {
+			player: player,
+			type: "worker",
+			xPos: randTile[0] + 1,
+			yPos: randTile[1] + 1
+		};
+		board.bunnies.push(origWorker);
+		origWorker = {
+			player: player,
+			type: "worker",
+			xPos: randTile[0] + 1,
+			yPos: randTile[1] - 1
+		};
+		board.bunnies.push(origWorker);
+		var origWarrior = {
+			player: player,
+			type: "warrior",
+			xPos: randTile[0],
+			yPos: randTile[1]
+		};
+		board.bunnies.push(origWarrior);
+	}
+
+	// Randomized start for board
+	function initialize(board, useableTiles) {
+		// Initialize amount of money originally on board and board size
+		var numMoney = 10;
+		var boardSize = 15;
 
 		// Create random types of tiles to fill board
-		for (var i = 0; i < 10; i++) {
+		for (var i = 0; i < boardSize; i++) {
 			var row = [];
-			for (var j = 0; j < 10; j++) {
+			for (var j = 0; j < boardSize; j++) {
 				row.push(Math.floor(Math.random() * 3))
+
+				// Add tiles to usable tiles if not on the border
+				if (j != 0 && i != 0 && i != 
+					boardSize - 1 && j != boardSize - 1) {
+					useableTiles.push([i,j]);
+				}
+
 			}
 			board.tiles.push(row);
 		}
+		
+		initializeBase(board, useableTiles, 1);
+		initializeBase(board, useableTiles, 2);
+
 
 		// Place money on board at random locations
-		for (var i = 0; i < 7; i++) {
-			var randX = Math.floor((Math.random() * board.tiles.length))
-			var randY = Math.floor((Math.random() * board.tiles.length))
+		for (var i = 0; i < numMoney; i++) {
+			randTile = useableTiles[Math.floor(Math.random()
+				*useableTiles.length)];
 
-			while (board.money.indexOf([randX, randY]) > -1) {
-				randX = Math.floor((Math.random() * board.tiles.length))
-				randY = Math.floor((Math.random() * board.tiles.length))
-			}
+			board.money.push(randTile);
 
-			board.money.push([randX, randY]);
+			// remove the used up money
+			removeTileFromArray(useableTiles, randTile);
 		}
-
-
 	}
 
-	// placeholders until we get real values
+	// Tiles that can have items placed on them
+	var useableTiles = []
+
+	// Current board state
 	var board = {
 		tiles: [],
 	    bunnies: [],
 	    money: [],
+	    base1: null,
+	    base2: null,
 	    player1: null,
 	    player2: null
 	};
 
-	//defineBoard(board);
-	initialize(board);
+	initialize(board, useableTiles);
 
 	// Get canvas
 	var canvas = document.getElementById("myCanvas");

@@ -75,6 +75,25 @@
 		}
 	}
 
+	function addBase(base, player, ctx, squareSize) {
+		if (player === 1) {
+			ctx.fillStyle = "red";
+		}
+		else {
+			ctx.fillStyle = "blue";
+		}
+
+		for (var x = base[0] - 1; x < base[0] + 1; x++) {
+			for (var y = base[1] - 1; y < base[1] + 2; y++) {
+				if (x != base[0] || y != base[1]) {
+					ctx.fillRect(x*squareSize, y*squareSize,
+						squareSize,squareSize);
+				}
+			}
+		}
+
+	}
+
 
 	window.drawBoard = function(canvas, board) {
 
@@ -88,6 +107,8 @@
 		makeTiles(board.tiles, ctx, squareSize);
 		addUnits(board.bunnies, ctx, squareSize);
 		addMoney(board.money, ctx, squareSize);
+		addBase(board.base1, 1, ctx, squareSize);
+		addBase(board.base2, 2, ctx, squareSize);
 
 	};
 
