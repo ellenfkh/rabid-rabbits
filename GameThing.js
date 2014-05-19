@@ -121,8 +121,20 @@
 
 	// Get canvas
 	var canvas = document.getElementById("myCanvas");
+    var currentPlayer = 1;
+
+    function queryPlayer(player, state) {
+        var url = "http://localhost:900" + player + "/player/update";
+        var xmlHttp = new XMLHttpRequest();
+        xmlHttp.open("POST", url, false);
+        xmlHttp.send(JSON.stringify(state));
+        var response = xmlHttp.responseText;
+        console.log(response);
+        return JSON.parse();
+    }
 
 	drawBoard(canvas, board);
+    console.log(queryPlayer(1, board));
 	
 	window.update = function(commands) {
 
